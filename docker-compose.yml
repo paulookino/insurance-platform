@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: insurancedb
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  proposta:
+    build: ./proposta-service
+    environment:
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=insurancedb;Username=postgres;Password=postgres"
+    depends_on:
+      - postgres
+    ports:
+      - "5001:80"
+
+  contratacao:
+    build: ./contratacao-service
+    environment:
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=insurancedb;Username=postgres;Password=postgres"
+      PROPOSTA_BASE_URL: "http://proposta:80"
+    depends_on:
+      - postgres
+      - proposta
+    ports:
+      - "5002:80"
+
+volumes:
+  db_data:
